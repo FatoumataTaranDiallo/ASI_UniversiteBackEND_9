@@ -12,4 +12,6 @@ public class Ue
     {
         return "ID "+Id +" : "+NumeroUe+" - "+Intitule;
     }
+    public List<Note>? Notes { get; set; } = new();
+
 }

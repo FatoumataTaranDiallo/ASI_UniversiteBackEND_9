@@ -15,4 +15,7 @@ public class Etudiant
     {
         return $"ID {Id} : {NumEtud} - {Nom} {Prenom} inscrit en "+ParcoursSuivi;
     }
+   
+    public List<Note>? NotesObtenues { get; set; } = new();
+    
 }
