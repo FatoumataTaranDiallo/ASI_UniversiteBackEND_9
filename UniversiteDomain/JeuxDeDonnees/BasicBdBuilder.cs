@@ -1,14 +1,11 @@
 using UniversiteDomain.DataAdapters.DataAdaptersFactory;
 using UniversiteDomain.Entities;
-// Commentez cette ligne pour l'instant (sera utilisée au chapitre 7)
-// using UniversiteDomain.Entities.SecurityEntities;
 using UniversiteDomain.UseCases.EtudiantUseCases.Create;
 using UniversiteDomain.UseCases.NoteUseCases;
 using UniversiteDomain.UseCases.ParcoursUseCases;
 using UniversiteDomain.UseCases.ParcoursUseCases.EtudiantDansParcours;
 using UniversiteDomain.UseCases.UeUseCases;
-// Commentez cette ligne pour l'instant (sera utilisée au chapitre 7)
-// using UniversiteDomain.UseCases.SecurityUseCases;
+using UniversiteDomain.UseCases.SecurityUseCases.Create;
 
 namespace UniversiteDomain.JeuxDeDonnees;
 
@@ -120,7 +117,8 @@ public class BasicBdBuilder(IRepositoryFactory repositoryFactory) : BdBuilder(re
     {
         foreach (Etudiant e in _etudiants)
         {
-            await new CreateEtudiantUseCase(repositoryFactory.EtudiantRepository()).ExecuteAsync(e);
+            // Correction ici : On passe repositoryFactory (la factory) et non le repo
+            await new CreateEtudiantUseCase(repositoryFactory).ExecuteAsync(e);
         }
     }
     
@@ -136,7 +134,8 @@ public class BasicBdBuilder(IRepositoryFactory repositoryFactory) : BdBuilder(re
     {
         foreach (Ue ue in _ues)
         {
-            await new CreateUeUseCase(repositoryFactory.UeRepository()).ExecuteAsync(ue);
+            // Correction ici : On passe repositoryFactory pour être cohérent avec l'architecture
+            await new CreateUeUseCase(repositoryFactory).ExecuteAsync(ue);
         }
     }
 
@@ -166,29 +165,26 @@ public class BasicBdBuilder(IRepositoryFactory repositoryFactory) : BdBuilder(re
     
     protected override async Task BuildRolesAsync()
     {
-        /*
-        // A décommenter quand on aura rajouté les rôles (chapitre 7)
+        // Création des rôles dans la table aspnetroles
         await new CreateUniversiteRoleUseCase(repositoryFactory).ExecuteAsync(Roles.Responsable);
         await new CreateUniversiteRoleUseCase(repositoryFactory).ExecuteAsync(Roles.Scolarite);
         await new CreateUniversiteRoleUseCase(repositoryFactory).ExecuteAsync(Roles.Etudiant);
-        */
     }
 
     protected override async Task BuildUsersAsync()
     {
-        /*
-        // A décommenter quand on aura rajouté les Users (chapitre 7)
         CreateUniversiteUserUseCase uc = new CreateUniversiteUserUseCase(repositoryFactory);
         
+        // Création des utilisateurs étudiants
         foreach (var etudiant in _etudiants)
         {
             await uc.ExecuteAsync(etudiant.Email, etudiant.Email, this.Password, Roles.Etudiant, etudiant);
         }
         
+        // Création des responsables et scolarité
         foreach (var user in _usersNonEtudiants)
         {
             await uc.ExecuteAsync(user.Email, user.Email, this.Password, user.Role, null);
         }
-        */
     }
 }

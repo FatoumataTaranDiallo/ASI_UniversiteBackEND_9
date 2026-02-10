@@ -1,8 +1,8 @@
 ﻿using System.Linq.Expressions;
 using Moq;
 using UniversiteDomain.DataAdapters;
+using UniversiteDomain.DataAdapters.DataAdaptersFactory; // Ajouté pour IRepositoryFactory
 using UniversiteDomain.Entities;
-
 using UniversiteDomain.UseCases.EtudiantUseCases.Create;
 
 namespace UniversiteDomainUnitTest;
@@ -28,6 +28,12 @@ public class EtudiantUnitTest
         // On initialise une fausse datasource qui va simuler un EtudiantRepository
         var mock = new Mock<IEtudiantRepository>();
         
+        // --- AJOUT POUR LA FACTORY ---
+        // On crée le mock de la factory
+        var mockFactory = new Mock<IRepositoryFactory>();
+        // On configure la factory pour qu'elle renvoie notre mock de repository quand on l'appelle
+        mockFactory.Setup(f => f.EtudiantRepository()).Returns(mock.Object);
+        // -----------------------------
         
         // Il faut ensuite aller dans le use case pour voir quelles fonctions simuler
         // Nous devons simuler FindByCondition et Create
@@ -46,11 +52,9 @@ public class EtudiantUnitTest
         Etudiant etudiantCree =new Etudiant{Id=id,NumEtud=numEtud, Nom = nom, Prenom=prenom, Email=email};
         mock.Setup(repoEtudiant=>repoEtudiant.CreateAsync(etudiantSansId)).ReturnsAsync(etudiantCree);
         
-        // On crée le bouchon (un faux etudiantRepository). Il est prêt à être utilisé
-        var fauxEtudiantRepository = mock.Object;
+        // Création du use case en injectant notre fausse factory (qui contient notre faux repository)
+        CreateEtudiantUseCase useCase=new CreateEtudiantUseCase(mockFactory.Object);
         
-        // Création du use case en injectant notre faux repository
-        CreateEtudiantUseCase useCase=new CreateEtudiantUseCase(fauxEtudiantRepository);
         // Appel du use case
         var etudiantTeste=await useCase.ExecuteAsync(etudiantSansId);
         
@@ -61,5 +65,4 @@ public class EtudiantUnitTest
         Assert.That(etudiantTeste.Prenom, Is.EqualTo(etudiantCree.Prenom));
         Assert.That(etudiantTeste.Email, Is.EqualTo(etudiantCree.Email));
     }
-
 }

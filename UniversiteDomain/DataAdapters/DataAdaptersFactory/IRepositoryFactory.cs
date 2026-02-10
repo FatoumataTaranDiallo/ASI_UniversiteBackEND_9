@@ -12,5 +12,7 @@ public interface IRepositoryFactory
     Task SaveChangesAsync();
     IUeRepository UeRepository();
     INoteRepository NoteRepository();
-
+    IUniversiteRoleRepository UniversiteRoleRepository();
+    IUniversiteUserRepository UniversiteUserRepository();
+    
 }

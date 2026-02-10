@@ -1,10 +1,10 @@
 using System.Linq.Expressions;
 using Moq;
 using UniversiteDomain.DataAdapters;
+using UniversiteDomain.DataAdapters.DataAdaptersFactory; // Ajouté pour la factory
 using UniversiteDomain.Entities;
 using UniversiteDomain.Exceptions.UeExceptions;
 using UniversiteDomain.UseCases.UeUseCases;
-using static UniversiteDomain.UseCases.UeUseCases.CreateUeUseCase;
 
 namespace UniversiteDomainUnitTest;
 
@@ -23,6 +23,12 @@ public class UeUnitTest
         var ueCree = new Ue { Id = 1, NumeroUe = numero, Intitule = intitule };
 
         var mock = new Mock<IUeRepository>();
+        
+        // --- AJOUT POUR LA FACTORY ---
+        var mockFactory = new Mock<IRepositoryFactory>();
+        // On dit à la factory de renvoyer notre mock de repo UE
+        mockFactory.Setup(f => f.UeRepository()).Returns(mock.Object);
+        // -----------------------------
 
         // Pas de doublon
         mock.Setup(repo => repo.FindByConditionAsync(It.IsAny<Expression<Func<Ue, bool>>>()))
@@ -31,7 +37,8 @@ public class UeUnitTest
         // Retour de création
         mock.Setup(repo => repo.CreateAsync(ueSansId)).ReturnsAsync(ueCree);
 
-        var useCase = new CreateUeUseCase(mock.Object);
+        // On passe mockFactory.Object au lieu de mock.Object
+        var useCase = new CreateUeUseCase(mockFactory.Object);
         var result = await useCase.ExecuteAsync(ueSansId);
 
         Assert.That(result.Id, Is.EqualTo(ueCree.Id));
@@ -43,7 +50,13 @@ public class UeUnitTest
     public void CreateUeUseCase_InvalidIntitule_ThrowsException()
     {
         var mock = new Mock<IUeRepository>();
-        var useCase = new CreateUeUseCase(mock.Object);
+        
+        // --- AJOUT POUR LA FACTORY ---
+        var mockFactory = new Mock<IRepositoryFactory>();
+        mockFactory.Setup(f => f.UeRepository()).Returns(mock.Object);
+        // -----------------------------
+        
+        var useCase = new CreateUeUseCase(mockFactory.Object);
         var ueInvalide = new Ue { NumeroUe = "UE002", Intitule = "AB" };
 
         Assert.ThrowsAsync<InvalidUeException>(async () => await useCase.ExecuteAsync(ueInvalide));

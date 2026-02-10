@@ -1,11 +1,13 @@
 using UniversiteDomain.DataAdapters;
+using UniversiteDomain.DataAdapters.DataAdaptersFactory;
 using UniversiteDomain.Entities;
 using UniversiteDomain.Exceptions.EtudiantExceptions;
 using UniversiteDomain.Util;
 
 namespace UniversiteDomain.UseCases.EtudiantUseCases.Create;
 
-public class CreateEtudiantUseCase(IEtudiantRepository etudiantRepository)
+// On change ici : on injecte la Factory (IRepositoryFactory) au lieu du repo seul
+public class CreateEtudiantUseCase(IRepositoryFactory factory)
 {
     public async Task<Etudiant> ExecuteAsync(string numEtud, string nom, string prenom, string email)
     {
@@ -15,15 +17,26 @@ public class CreateEtudiantUseCase(IEtudiantRepository etudiantRepository)
     public async Task<Etudiant> ExecuteAsync(Etudiant etudiant)
     {
         await CheckBusinessRules(etudiant);
-        Etudiant et = await etudiantRepository.CreateAsync(etudiant);
-        etudiantRepository.SaveChangesAsync().Wait();
+        // On utilise la factory pour obtenir le repo
+        Etudiant et = await factory.EtudiantRepository().CreateAsync(etudiant);
+        // On utilise la factory pour sauvegarder de manière asynchrone (plus propre que .Wait())
+        await factory.SaveChangesAsync();
         return et;
+    }
+    public bool IsAuthorized(string role)
+    {
+        // Seuls les responsables et la scolarité peuvent créer un étudiant
+        return role.Equals(Roles.Responsable) || role.Equals(Roles.Scolarite);
     }
     private async Task CheckBusinessRules(Etudiant etudiant)
     {
         ArgumentNullException.ThrowIfNull(etudiant);
         ArgumentNullException.ThrowIfNull(etudiant.NumEtud);
         ArgumentNullException.ThrowIfNull(etudiant.Email);
+        ArgumentNullException.ThrowIfNull(factory);
+        
+        // On récupère le repository via la factory pour les vérifications métier
+        var etudiantRepository = factory.EtudiantRepository();
         ArgumentNullException.ThrowIfNull(etudiantRepository);
         
         // On recherche un étudiant avec le même numéro étudiant
