@@ -30,4 +30,9 @@ public class NoteRepository(UniversiteDbContext context)
     {
         return await Context.Notes.FindAsync(etudiantId, ueId);
     }
+    public async Task UpdateAsync(Note note) 
+    {
+        Context.Notes.Update(note);
+        await Context.SaveChangesAsync();
+    }
 }

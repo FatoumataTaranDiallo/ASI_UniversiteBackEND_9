@@ -8,5 +8,6 @@ public interface INoteRepository
     Task<List<Note>> FindByConditionAsync(Expression<Func<Note, bool>> expression);
     // Optionnel : méthode pour trouver par Etudiant+Ue
     Task<Note?> FindByEtudiantAndUeAsync(long etudiantId, long ueId);
+    Task UpdateAsync(Note note);
 
 }

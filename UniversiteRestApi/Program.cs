@@ -65,6 +65,11 @@ String connectionString = builder.Configuration.GetConnectionString("MySqlConnec
 builder.Services.AddDbContext<UniversiteDbContext>(options =>options.UseMySQL(connectionString));
 // La factory est rajoutée dans les services de l'application, toujours prête à être utilisée par injection de dépendances
 builder.Services.AddScoped<IRepositoryFactory, RepositoryFactory>();
+
+// Injection des Use Cases pour la saisie en masse
+builder.Services.AddScoped<UniversiteDomain.UseCases.NoteUseCases.SaisieEnMasse.ExportNotesCsvUseCase>();
+builder.Services.AddScoped<UniversiteDomain.UseCases.NoteUseCases.SaisieEnMasse.ImportNotesCsvUseCase>();
+
 //////////////// Fin connexion BD
 
 ////////// Sécurisation
